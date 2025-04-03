@@ -1,0 +1,70 @@
+virt-install \
+  --name=${CLUSTER_NAME}-master-1 \
+  --ram=40960 \
+  --vcpus=16 \
+  --cpu host-passthrough \
+  --os-type linux \
+  --os-variant rhel8.0 \
+  --noreboot \
+  --events on_reboot=restart \
+  --noautoconsole \
+  --boot hd,cdrom \
+  --import \
+  --disk path=/opt/ssd/${CLUSTER_NAME}/hub01.qcow2,size=20 \
+  --disk /opt/ssd/boot/discovery_image_${CLUSTER_NAME}.iso,device=cdrom \
+  --network type=direct,source=${NAME_BRIDGE},mac=00:00:00:00:00:${MAC_ADDRESS_MODIFIER}1,source_mode=bridge,model=virtio
+
+export CLUSTER_NAME="hubtf"
+export NAME_BRIDGE="br0"
+export MAC_ADDRESS_MODIFIER="b"
+
+sudo qemu-img create -f qcow2 /opt/ssd/${CLUSTER_NAME}/hub01.qcow2 200G
+
+SUSHY_EMULATOR_LISTEN_IP = u'0.0.0.0'
+SUSHY_EMULATOR_LISTEN_PORT = 8000
+SUSHY_EMULATOR_SSL_CERT = None
+SUSHY_EMULATOR_SSL_KEY = None
+SUSHY_EMULATOR_OS_CLOUD = None
+SUSHY_EMULATOR_LIBVIRT_URI = u'qemu:///system'
+SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = True
+SUSHY_EMULATOR_BOOT_LOADER_MAP = {
+    u'UEFI': {
+        u'x86_64': u'/usr/share/OVMF/OVMF_CODE.secboot.fd'
+    },
+    u'Legacy': {
+        u'x86_64': None
+    }
+}
+
+sudo mkdir -p /etc/sushy/
+cat << "EOF" | sudo tee /etc/sushy/sushy-emulator.conf
+SUSHY_EMULATOR_LISTEN_IP = u'0.0.0.0'
+SUSHY_EMULATOR_LISTEN_PORT = 8000
+SUSHY_EMULATOR_SSL_CERT = None
+SUSHY_EMULATOR_SSL_KEY = None
+SUSHY_EMULATOR_OS_CLOUD = None
+SUSHY_EMULATOR_LIBVIRT_URI = u'qemu:///system'
+SUSHY_EMULATOR_IGNORE_BOOT_DEVICE = True
+SUSHY_EMULATOR_BOOT_LOADER_MAP = {
+    u'UEFI': {
+        u'x86_64': u'/usr/share/OVMF/OVMF_CODE.secboot.fd'
+    },
+    u'Legacy': {
+        u'x86_64': None
+    }
+}
+EOF
+
+export SUSHY_TOOLS_IMAGE=${SUSHY_TOOLS_IMAGE:-"quay.io/metal3-io/sushy-tools"}
+sudo podman create --net host --privileged --name sushy-emulator -v "/etc/sushy":/etc/sushy -v "/var/run/libvirt":/var/run/libvirt "${SUSHY_TOOLS_IMAGE}" sushy-emulator -i :: -p 8000 --config /etc/sushy/sushy-emulator.conf
+sudo podman start sushy-emulator
+sudo firewall-cmd --add-port=8000/tcp
+
+# First, use Podman to create a systemd unit
+sudo sh -c 'podman generate systemd --restart-policy=always -t 1 sushy-emulator > /etc/systemd/system/sushy-emulator.service'
+sudo systemctl daemon-reload
+
+# Next, use systemd to start and enable the Sushy-Emulator
+sudo systemctl restart sushy-emulator.service
+sudo systemctl enable sushy-emulator.service
+sudo systemctl status sushy-emulator.service
