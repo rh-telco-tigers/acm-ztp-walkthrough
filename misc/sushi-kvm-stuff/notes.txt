@@ -58,7 +58,8 @@ EOF
 export SUSHY_TOOLS_IMAGE=${SUSHY_TOOLS_IMAGE:-"quay.io/metal3-io/sushy-tools"}
 sudo podman create --net host --privileged --name sushy-emulator -v "/etc/sushy":/etc/sushy -v "/var/run/libvirt":/var/run/libvirt "${SUSHY_TOOLS_IMAGE}" sushy-emulator -i :: -p 8000 --config /etc/sushy/sushy-emulator.conf
 sudo podman start sushy-emulator
-sudo firewall-cmd --add-port=8000/tcp
+sudo firewall-cmd --add-port=8000/tcp --permanent
+sudo firewall-cmd --reload
 
 # First, use Podman to create a systemd unit
 sudo sh -c 'podman generate systemd --restart-policy=always -t 1 sushy-emulator > /etc/systemd/system/sushy-emulator.service'
