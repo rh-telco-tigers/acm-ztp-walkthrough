@@ -20,9 +20,9 @@ spec:
       project: default
       sources:
         - repositoryType: git
-          repoURL: https://github.com/pandeybk/redhat-advanced-cluster-management.git
+          repoURL: https://github.com/rh-telco-tigers/acm-ztp-walkthrough.git
           targetRevision: main
-          path: podinfo-kustomize/overlays/dev
+          path: day3/overlays/dev
       destination:
         namespace: dev
         server: "{{server}}"
