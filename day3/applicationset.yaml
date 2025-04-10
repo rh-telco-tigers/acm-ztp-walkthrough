@@ -22,7 +22,7 @@ spec:
         - repositoryType: git
           repoURL: https://github.com/rh-telco-tigers/acm-ztp-walkthrough.git
           targetRevision: main
-          path: day3/overlays/dev
+          path: day3/podinfo/overlays/dev
       destination:
         namespace: dev
         server: "{{server}}"
