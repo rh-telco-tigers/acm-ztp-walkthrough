@@ -1,0 +1,2 @@
+- [Automate Single Node OpenShift Deployment Using Red Hat ACM and SiteConfig (Part 1)](https://pandeybk.medium.com/automate-single-node-openshift-deployment-using-red-hat-acm-and-siteconfig-39ddcd31225c)
+- [Configuring Static IP Networking for SNO with ACM SiteConfig (Part 2)](https://medium.com/@pandeybk/configuring-static-ip-networking-for-sno-with-acm-siteconfig-blog-2-bd05d0ea9441)
