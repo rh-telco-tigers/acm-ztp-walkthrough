@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: podinfo-frontend
+spec:
+  path: /
+  to:
+    name: frontend
+    weight: 100
+    kind: Service
+  host: ''
+  tls:
+    insecureEdgeTerminationPolicy: Allow
+    termination: edge
+  port:
+    targetPort: http
+  alternateBackends: []

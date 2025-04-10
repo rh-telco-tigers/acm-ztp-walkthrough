@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: podinfo-dev
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: podinfo-dev-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: podinfo-dev-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      project: default
+      sources:
+        - repositoryType: git
+          repoURL: https://github.com/pandeybk/redhat-advanced-cluster-management.git
+          targetRevision: main
+          path: podinfo-kustomize/overlays/dev
+      destination:
+        namespace: dev
+        server: "{{server}}"
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+          allowEmpty: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - Replace=true
+          - ApplyOutOfSyncOnly=true
+          - Validate=false
+          - PrunePropagationPolicy=background
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: podinfo-dev-placement
+  namespace: openshift-gitops
+spec:
+  numberOfClusters: 2
+  clusterSets:
+    - default
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: cloud
+              operator: In
+              values:
+                - BareMetal
