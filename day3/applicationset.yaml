@@ -38,6 +38,11 @@ spec:
           - ApplyOutOfSyncOnly=true
           - Validate=false
           - PrunePropagationPolicy=background
+      ignoreDifferences:
+        - group: route.openshift.io
+          kind: Route
+          jsonPointers:
+            - /spec/host
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
