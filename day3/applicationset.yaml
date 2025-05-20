@@ -52,7 +52,7 @@ spec:
     - requiredClusterSelector:
         labelSelector:
           matchExpressions:
-            - key: cloud
+            - key: vendor
               operator: In
               values:
-                - BareMetal
+                - OpenShift
